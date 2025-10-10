@@ -1143,7 +1143,7 @@ def get_time_since_last_input() -> int:
     if ctypes.windll.user32.GetLastInputInfo(ctypes.byref(last_input_info)):
         current_time = GetTickCount64()
         idle_time_ms = current_time - last_input_info.dwTime
-        return idle_time_ms // 1000
+        return max(idle_time_ms // 1000, 0)
     return 0
 
 
