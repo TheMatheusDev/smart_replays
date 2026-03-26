@@ -123,10 +123,14 @@ def restart_replay_buffering():
     """
     _print("Stopping replay buffering...")
     replay_output = obs.obs_frontend_get_replay_buffer_output()
-    obs.obs_frontend_replay_buffer_stop()
-
-    while not obs.obs_output_can_begin_data_capture(replay_output, 0):
-        time.sleep(0.1)
+    
+    try:
+        obs.obs_frontend_replay_buffer_stop()
+        while not obs.obs_output_can_begin_data_capture(replay_output, 0):
+            time.sleep(0.1)
+    finally:
+        obs.obs_output_release(replay_output)
+        
     _print("Replay buffering stopped.")
     _print("Starting replay buffering...")
     obs.obs_frontend_replay_buffer_start()
