@@ -21,6 +21,7 @@ import obspython as obs
 from pathlib import Path
 from datetime import datetime
 import traceback
+from collections import Counter
 
 
 def gen_clip_base_name(mode: ClipNamingModes | None = None) -> str:
@@ -48,7 +49,7 @@ def gen_clip_base_name(mode: ClipNamingModes | None = None) -> str:
             _print("Clip file name depends on the name of an app (.exe file name) "
                    "that was active most of the time during the clip recording.")
             if VARIABLES.clip_exe_history:
-                executable_path = max(VARIABLES.clip_exe_history, key=VARIABLES.clip_exe_history.count)
+                executable_path = Counter(VARIABLES.clip_exe_history).most_common(1)[0][0]
             else:
                 executable_path = get_executable_path(get_active_window_pid())
 
