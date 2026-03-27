@@ -49,6 +49,7 @@ class VARIABLES:
     script_settings = None
     hotkey_ids: dict = {}
     force_mode = None
+    obs_output_mode: str | None = None  # Cache for OBS Output > Mode config value
 
 
 class ConfigTypes(Enum):

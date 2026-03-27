@@ -12,7 +12,7 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU Affero General Public License for more details.
 
-from .globals import PN, CONSTANTS, ConfigTypes
+from .globals import PN, CONSTANTS, VARIABLES, ConfigTypes
 from .tech import _print
 
 from pathlib import Path
@@ -61,6 +61,17 @@ def get_obs_config(section_name: str | None = None,
     return functions[value_type](cfg, section_name, param_name)
 
 
+def get_obs_output_mode() -> str:
+    """
+    Returns the OBS output mode ("Simple" or "Advanced").
+    The result is cached in VARIABLES.obs_output_mode since the output mode
+    rarely changes during a session.
+    """
+    if VARIABLES.obs_output_mode is None:
+        VARIABLES.obs_output_mode = get_obs_config("Output", "Mode")
+    return VARIABLES.obs_output_mode
+
+
 def get_last_replay_file_name() -> str:
     """
     Returns the last saved buffer file name.
@@ -89,8 +100,7 @@ def get_replay_buffer_max_time() -> int:
     """
     Returns replay buffer max time from OBS config (in seconds).
     """
-    config_mode = get_obs_config("Output", "Mode")
-    if config_mode == "Simple":
+    if get_obs_output_mode() == "Simple":
         return get_obs_config("SimpleOutput", "RecRBTime", int)
     else:
         return get_obs_config("AdvOut", "RecRBTime", int)
@@ -110,8 +120,7 @@ def get_base_path(script_settings: Any | None = None) -> Path:
         if script_path:
             return Path(script_path)
 
-    config_mode = get_obs_config("Output", "Mode")
-    if config_mode == "Simple":
+    if get_obs_output_mode() == "Simple":
         return Path(get_obs_config("SimpleOutput", "FilePath"))
     else:
         return Path(get_obs_config("AdvOut", "RecFilePath"))
