@@ -51,9 +51,8 @@ def gen_clip_base_name(mode: ClipNamingModes | None = None) -> str:
             _print("Clip file name depends on the name of an app (.exe file name) "
                    "that was active most of the time during the clip recording.")
             with VARIABLES.clip_exe_history_lock:
-                history_snapshot = list(VARIABLES.clip_exe_history) if VARIABLES.clip_exe_history else []
-            if history_snapshot:
-                counts = Counter(history_snapshot)
+                counts = Counter(VARIABLES.clip_exe_history) if VARIABLES.clip_exe_history else Counter()
+            if counts:
                 executable_path = max(counts, key=counts.get)
             else:
                 executable_path = get_executable_path(get_active_window_pid())
