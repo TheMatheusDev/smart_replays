@@ -53,7 +53,8 @@ def gen_clip_base_name(mode: ClipNamingModes | None = None) -> str:
             with VARIABLES.clip_exe_history_lock:
                 history_snapshot = list(VARIABLES.clip_exe_history) if VARIABLES.clip_exe_history else []
             if history_snapshot:
-                executable_path = Counter(history_snapshot).most_common(1)[0][0]
+                counts = Counter(history_snapshot)
+                executable_path = max(counts, key=counts.get)
             else:
                 executable_path = get_executable_path(get_active_window_pid())
 
