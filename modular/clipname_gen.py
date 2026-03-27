@@ -34,7 +34,9 @@ def gen_clip_base_name(mode: ClipNamingModes | None = None) -> str:
     :return: The base name of the clip based on the selected naming mode.
     """
     _print("Generating clip base name...")
-    mode = obs.obs_data_get_int(VARIABLES.script_settings, PN.PROP_CLIPS_NAMING_MODE) if mode is None else mode
+    if mode is None:
+        with VARIABLES.script_settings_lock:
+            mode = obs.obs_data_get_int(VARIABLES.script_settings, PN.PROP_CLIPS_NAMING_MODE)
     mode = ClipNamingModes(mode)
 
     if mode in [ClipNamingModes.CURRENT_PROCESS, ClipNamingModes.MOST_RECORDED_PROCESS]:
@@ -48,13 +50,17 @@ def gen_clip_base_name(mode: ClipNamingModes | None = None) -> str:
         else:
             _print("Clip file name depends on the name of an app (.exe file name) "
                    "that was active most of the time during the clip recording.")
-            if VARIABLES.clip_exe_history:
-                executable_path = Counter(VARIABLES.clip_exe_history).most_common(1)[0][0]
+            with VARIABLES.clip_exe_history_lock:
+                history_snapshot = list(VARIABLES.clip_exe_history) if VARIABLES.clip_exe_history else []
+            if history_snapshot:
+                executable_path = Counter(history_snapshot).most_common(1)[0][0]
             else:
                 executable_path = get_executable_path(get_active_window_pid())
 
         _print(f'Searching for {executable_path} in aliases list...')
-        if alias := get_alias(executable_path, VARIABLES.aliases):
+        with VARIABLES.aliases_lock:
+            aliases_snapshot = dict(VARIABLES.aliases)
+        if alias := get_alias(executable_path, aliases_snapshot):
             _print(f'Alias found: {alias}.')
             return alias
         else:

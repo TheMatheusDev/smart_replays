@@ -55,7 +55,8 @@ def append_clip_exe_history():
     with suppress(Exception):
         pid = get_active_window_pid()
         exe = get_executable_path(pid)
-        VARIABLES.clip_exe_history.append(exe)
+        with VARIABLES.clip_exe_history_lock:
+            VARIABLES.clip_exe_history.append(exe)
 
 
 def append_video_exe_history():

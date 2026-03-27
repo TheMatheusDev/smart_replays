@@ -35,12 +35,15 @@ def on_buffer_recording_started_callback(event):
         return
 
     # Reset and restart exe history
-    VARIABLES.clip_exe_history = deque([], maxlen=get_replay_buffer_max_time())
+    with VARIABLES.clip_exe_history_lock:
+        VARIABLES.clip_exe_history = deque([], maxlen=get_replay_buffer_max_time())
     _print(f"Exe history deque created. Maxlen={VARIABLES.clip_exe_history.maxlen}.")
     obs.timer_add(append_clip_exe_history, 1000)
 
     # Start replay buffer auto restart loop.
-    if restart_loop_time := obs.obs_data_get_int(VARIABLES.script_settings, PN.PROP_RESTART_BUFFER_LOOP):
+    with VARIABLES.script_settings_lock:
+        restart_loop_time = obs.obs_data_get_int(VARIABLES.script_settings, PN.PROP_RESTART_BUFFER_LOOP)
+    if restart_loop_time:
         obs.timer_add(restart_replay_buffering_callback, restart_loop_time * 1000)
 
 
@@ -54,7 +57,8 @@ def on_buffer_recording_stopped_callback(event):
 
     obs.timer_remove(append_clip_exe_history)
     obs.timer_remove(restart_replay_buffering_callback)
-    VARIABLES.clip_exe_history.clear()
+    with VARIABLES.clip_exe_history_lock:
+        VARIABLES.clip_exe_history.clear()
 
 
 def on_buffer_save_callback(event):

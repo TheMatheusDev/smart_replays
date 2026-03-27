@@ -64,7 +64,8 @@ def script_defaults(s):
 def script_update(settings):
     _print("Updating script...")
 
-    VARIABLES.script_settings = settings
+    with VARIABLES.script_settings_lock:
+        VARIABLES.script_settings = settings
     _print(obs.obs_data_get_json(VARIABLES.script_settings))
     _print("Script updated")
 
@@ -80,7 +81,8 @@ def script_save(settings):
 
 def script_load(script_settings):
     _print("Loading script...")
-    VARIABLES.script_settings = script_settings
+    with VARIABLES.script_settings_lock:
+        VARIABLES.script_settings = script_settings
     # VARIABLES.update_available = check_updates(CONSTANTS.VERSION)  # todo: for future updates
 
     json_settings = json.loads(obs.obs_data_get_json(script_settings))
