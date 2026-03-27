@@ -15,7 +15,6 @@
 import tkinter as tk
 from tkinter import font as f
 
-import time
 import sys
 
 
@@ -136,39 +135,61 @@ class NotificationWindow:
                                      on_finish_callback=self.on_text_anim_finished_callback)
 
 
-    def animate_frame(self, frame: tk.Frame, target_w, delay: float = 0.00001, speed: int = 3):
-        init_w, init_h = frame.winfo_width(), self.wnd_h
-        speed = speed if init_w < target_w else -speed
+    def animate_frame_step(self, frame: tk.Frame, target_w, curr_w, speed, on_finish=None):
+        if curr_w != target_w:
+            next_w = min(curr_w + speed, target_w) if speed > 0 else max(curr_w + speed, target_w)
+            frame.config(width=next_w)
+            frame.place(x=self.wnd_w - next_w, y=0)
+            self.root.after(1, self.animate_frame_step, frame, target_w, next_w, speed, on_finish)
+        else:
+            if on_finish:
+                on_finish()
 
-        for curr_w in range(init_w, target_w, speed):
-            frame.config(width=curr_w)
-            frame.place(x=self.wnd_w-curr_w, y=0)
-            frame.update()
-            time.sleep(delay)
-
-        if frame.winfo_width() != target_w:
-            frame.config(width=target_w)
-            frame.place(x=self.wnd_w - target_w, y=0)
-            frame.update()
+    def animate_frame(self, frame: tk.Frame, target_w, speed: int = 3, on_finish=None):
+        curr_w = frame.winfo_width()
+        if curr_w == target_w:
+            if on_finish:
+                on_finish()
+            return
+        direction = speed if curr_w < target_w else -speed
+        self.animate_frame_step(frame, target_w, curr_w, direction, on_finish)
 
     def show(self):
-        self.animate_frame(self.first_frame, self.wnd_w)
-        time.sleep(0.1)
-        self.second_frame.lift()
-        self.animate_frame(self.second_frame, self.wnd_w - self.second_frame_padding_x)
-        self.root.after(1000, self.message.update_scroll)
+        def after_first_frame():
+            self.second_frame.lift()
+            self.animate_frame(
+                self.second_frame,
+                self.wnd_w - self.second_frame_padding_x,
+                on_finish=lambda: self.root.after(1000, self.message.update_scroll)
+            )
+
+        self.animate_frame(
+            self.first_frame,
+            self.wnd_w,
+            on_finish=lambda: self.root.after(100, after_first_frame)
+        )
         self.root.mainloop()
 
     def close(self):
-        self.animate_frame(self.second_frame, 0)
-        time.sleep(0.1)
-        self.animate_frame(self.first_frame, 0)
+        def after_second_frame():
+            self.animate_frame(
+                self.first_frame,
+                0,
+                on_finish=self._destroy
+            )
+
+        self.animate_frame(
+            self.second_frame,
+            0,
+            on_finish=lambda: self.root.after(100, after_second_frame)
+        )
+
+    def _destroy(self):
         self.window.destroy()
         self.root.destroy()
 
     def on_text_anim_finished_callback(self):
-        time.sleep(2.5)
-        self.close()
+        self.root.after(2500, self.close)
 
 
 if __name__ == '__main__':
