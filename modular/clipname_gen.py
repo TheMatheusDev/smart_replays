@@ -120,7 +120,7 @@ def gen_filename(base_name: str, template: str, dt: datetime | None = None) -> s
         _print(traceback.format_exc())
         raise ValueError from e
 
-    if any(i in filename for i in CONSTANTS.FILENAME_PROHIBITED_CHARS):
+    if any(i in CONSTANTS.FILENAME_PROHIBITED_CHARS for i in filename):
         raise SyntaxError
     return filename
 

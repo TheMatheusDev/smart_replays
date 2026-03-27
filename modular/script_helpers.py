@@ -80,7 +80,7 @@ def load_aliases(script_settings_dict: dict):
             raise AliasInvalidFormat(index)
 
         path = os.path.expandvars(path)
-        if any(i in path for i in CONSTANTS.PATH_PROHIBITED_CHARS) or any(i in name for i in CONSTANTS.FILENAME_PROHIBITED_CHARS):
+        if any(i in CONSTANTS.PATH_PROHIBITED_CHARS for i in path) or any(i in CONSTANTS.FILENAME_PROHIBITED_CHARS for i in name):
             raise AliasInvalidCharacters(index)
 
         if Path(path) in new_aliases.keys():

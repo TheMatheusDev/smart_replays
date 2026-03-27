@@ -31,8 +31,8 @@ class CONSTANTS:
     OBS_VERSION = [int(i) for i in OBS_VERSION_RE.match(OBS_VERSION_STRING).groups()]
     CLIPS_FORCE_MODE_LOCK = Lock()
     VIDEOS_FORCE_MODE_LOCK = Lock()
-    FILENAME_PROHIBITED_CHARS = r'/\:"<>*?|%'
-    PATH_PROHIBITED_CHARS = r'"<>*?|%'
+    FILENAME_PROHIBITED_CHARS = frozenset(r'/\:"<>*?|%')
+    PATH_PROHIBITED_CHARS = frozenset(r'"<>*?|%')
     DEFAULT_FILENAME_FORMAT = "%NAME_%d.%m.%Y_%H-%M-%S"
     DEFAULT_ALIASES = (
         {"value": "C:\\Windows\\explorer.exe > Desktop", "selected": False, "hidden": False},
